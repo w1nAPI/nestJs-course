@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Загрузка изображения</title>
+</head>
+
+<body>
+    <h2>Загрузка изображения пользователя</h2>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="file" required />
+        <input type="text" name="userId" placeholder="ID пользователя" required />
+        <button type="submit">Загрузить</button>
+    </form>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const form = e.target;
+            const formData = new FormData();
+            const file = form.querySelector('input[name="file"]').files[0];
+            const userId = form.querySelector('input[name="userId"]').value;
+
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`http://localhost:3002/user/${userId}/image`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const result = await response.json();
+                document.getElementById('result').innerText = JSON.stringify(result, null, 2);
+            } catch (err) {
+                document.getElementById('result').innerText = 'Ошибка: ' + err.message;
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+}
+
+model Course {
+  id    Int     @id @default(autoincrement())
+  title String  @db.VarChar(150)
+  url   String
+  image String?
+
+  reviews Review[] @relation("course_reviews")
+
+  @@map("courses")
+}
+
+model User {
+  id       String  @id @default(uuid())
+  email    String  @unique
+  name     String
+  password String  @db.VarChar(255)
+  image    String?
+  ban      Boolean @default(false)
+
+  reviews Review[] @relation("user_reviews")
+
+  @@map("users")
+}
+
+model Review {
+  id       Int     @id @default(autoincrement())
+  courseId Int     @map("course_id")
+  userId   String  @map("user_id")
+  rating   Boolean
+  title    String  @db.VarChar(150)
+  text     String  @db.Text
+
+  course Course @relation("course_reviews", fields: [courseId], references: [id], onDelete: Cascade)
+  user   User   @relation("user_reviews", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, userId])
+  @@map("reviews")
+}
+
+model Admin {
+  id       String  @id @default(uuid())
+  email    String  @unique
+  name     String
+  password String  @db.VarChar(255)
+
+  @@map("admins")
+}

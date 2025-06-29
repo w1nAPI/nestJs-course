@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Курсы</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .card {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .card img {
+            width: 100px;
+            height: 60px;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+
+        .card-info {
+            flex: 1;
+        }
+
+        .error {
+            color: red;
+            margin-top: 5px;
+        }
+
+        .update-section {
+            margin-top: 30px;
+        }
+
+        button {
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Добавить курс</h2>
+    <form id="addForm" enctype="multipart/form-data">
+        <label>Название курса:
+            <input type="text" name="title" maxlength="150" required />
+        </label><br />
+        <label>URL курса:
+            <input type="text" name="url" required />
+        </label><br />
+        <label>Изображение:
+            <input type="file" name="image" accept="image/*" required />
+        </label><br />
+        <button type="submit">Добавить</button>
+        <div id="addError" class="error"></div>
+    </form>
+
+    <h2>Все курсы</h2>
+    <div id="coursesContainer">Загрузка...</div>
+
+    <div class="update-section">
+        <h2>Обновить курс</h2>
+        <form id="updateForm" enctype="multipart/form-data">
+            <label>ID курса:
+                <input type="number" name="id" required min="1" />
+            </label><br />
+            <label>Новое название:
+                <input type="text" name="title" maxlength="150" />
+            </label><br />
+            <label>Новый URL:
+                <input type="text" name="url" />
+            </label><br />
+            <label>Новое изображение:
+                <input type="file" name="image" accept="image/*" />
+            </label><br />
+            <button type="submit">Обновить</button>
+            <div id="updateError" class="error"></div>
+        </form>
+    </div>
+
+    <script>
+        const apiBase = 'http://localhost:3002/course';
+
+    
+        async function loadCourses() {
+            const container = document.getElementById('coursesContainer');
+            try {
+                const res = await fetch(`${apiBase}/all`);
+                if (!res.ok) throw new Error('Ошибка загрузки курсов');
+                const courses = await res.json();
+
+                if (courses.length === 0) {
+                    container.innerHTML = '<p>Курсов нет.</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                courses.forEach(course => {
+                    const imageUrl = course.image
+                        ? `http://localhost:9000/courses/${course.image}`
+                        : 'https://via.placeholder.com/100x60?text=No+Image';
+
+                    const div = document.createElement('div');
+                    div.className = 'card';
+                    div.innerHTML = `
+                        <img src="${imageUrl}" alt="${course.title}" />
+                        <div class="card-info">
+                            <h3>${course.title}</h3>
+                            <a href="${course.url}" target="_blank">Перейти</a>
+                            <button onclick="deleteCourse(${course.id})">Удалить</button>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (err) {
+                container.innerHTML = `<p class="error">Ошибка: ${err.message}</p>`;
+            }
+        }
+
+    
+        async function deleteCourse(id) {
+            if (!confirm('Удалить курс?')) return;
+            try {
+                const res = await fetch(`${apiBase}/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Ошибка удаления');
+                loadCourses();
+            } catch (err) {
+                alert(`Ошибка: ${err.message}`);
+            }
+        }
+
+        document.getElementById('addForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const errorEl = document.getElementById('addError');
+            errorEl.textContent = '';
+
+            try {
+                const res = await fetch(`${apiBase}/upload`, {
+                    method: 'POST',
+                    body: formData,
+                });
+                if (!res.ok) throw new Error('Ошибка добавления');
+                e.target.reset();
+                loadCourses();
+            } catch (err) {
+                errorEl.textContent = err.message;
+            }
+        });
+
+        document.getElementById('updateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const errorEl = document.getElementById('updateError');
+            errorEl.textContent = '';
+
+            try {
+                const id = formData.get('id');
+                const res = await fetch(`${apiBase}/${id}/upload`, {
+                    method: 'PUT',
+                    body: formData,
+                });
+                if (!res.ok) throw new Error('Ошибка обновления');
+                e.target.reset();
+                loadCourses();
+            } catch (err) {
+                errorEl.textContent = err.message;
+            }
+        });
+
+        loadCourses();
+    </script>
+</body>
+
+</html>
+ 
