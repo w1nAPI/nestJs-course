@@ -1,7 +1,10 @@
-import { Controller, Post, Body, Param, Put } from '@nestjs/common';
+import { Controller, Post, Body, Put, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { RegisterAdminDto } from './dto/register-admin.dto';
 import { LoginAdminDto } from './dto/login-admin-dto';
+import { CurrentAdmin } from './authorization/current-admin.decorator';
+import { JwtAuthAdminGuard } from './authorization/jwt-auth.guard';
+import { JwtAdminPayload } from './authorization/jwt-payload.interface';
 
 @Controller('admin')
 export class AdminController {
@@ -17,8 +20,12 @@ export class AdminController {
     return this.adminService.login(loginAdminDto);
   }
 
-  @Put('update/:id')
-  update(@Param('id') id: string, @Body() updateAdminDto: RegisterAdminDto) {
-    return this.adminService.update(id, updateAdminDto);
+  @UseGuards(JwtAuthAdminGuard)
+  @Put('update/')
+  update(
+    @CurrentAdmin() admin: JwtAdminPayload,
+    @Body() updateAdminDto: RegisterAdminDto,
+  ) {
+    return this.adminService.update(admin.sub, updateAdminDto);
   }
 }

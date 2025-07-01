@@ -18,10 +18,12 @@ export class UserService {
     private readonly minioService: MinioService,
   ) {}
 
-  async findByEmail(email: string): Promise<User | null> {
-    return this.prismaService.user.findUnique({
+  async findByEmail(email: string): Promise<User> {
+    const user = await this.prismaService.user.findUnique({
       where: { email },
     });
+    if (!user) throw new BadRequestException('Пользователь не найден');
+    return user;
   }
 
   async existsByEmail(email: string): Promise<boolean> {

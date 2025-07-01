@@ -1,5 +1,5 @@
 import * as bcrypt from 'bcrypt';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
@@ -14,6 +14,22 @@ export class AdminService {
     private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
   ) {}
+
+  async findById(id: string): Promise<Omit<Admin, 'password'>> {
+    const admin = await this.prismaService.admin.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    });
+    if (!admin) {
+      throw new UnauthorizedException('Администратор не найден');
+    }
+
+    return admin;
+  }
 
   async findByEmail(email: string) {
     return this.prismaService.admin.findUnique({

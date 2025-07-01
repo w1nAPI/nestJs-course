@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { AdminController } from './admin.controller';
 import { JwtModule } from '@nestjs/jwt';
+import { JwtAdminStrategy } from './authorization/jwt-strategy';
 
 @Module({
   imports: [
@@ -11,6 +12,6 @@ import { JwtModule } from '@nestjs/jwt';
     }),
   ],
   controllers: [AdminController],
-  providers: [AdminService],
+  providers: [AdminService, JwtAdminStrategy],
 })
 export class AdminModule {}

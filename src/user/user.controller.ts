@@ -16,9 +16,9 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangePasswordUserDto } from './dto/change-password-user.dto';
-import { JwtAuthGuard } from './authorization/jwt-auth.guard';
 import { CurrentUser } from './authorization/current-user.decorator';
-import { JwtPayload } from './authorization/jwt-payload.interface';
+import { JwtAuthUserGuard } from './authorization/jwt-auth.guard';
+import { JwtUserPayload } from './authorization/jwt-payload.interface';
 
 @Controller('user')
 export class UserController {
@@ -34,19 +34,19 @@ export class UserController {
     return this.userService.login(loginUserDto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthUserGuard)
   @Post('/image')
   @UseInterceptors(FileInterceptor('file'))
   updateImage(
-    @CurrentUser() user: JwtPayload,
+    @CurrentUser() user: JwtUserPayload,
     @UploadedFile() file: Express.Multer.File,
   ) {
     return this.userService.updateUserImage(user.sub, file);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthUserGuard)
   @Get()
-  getFullInfo(@CurrentUser() user: JwtPayload) {
+  getFullInfo(@CurrentUser() user: JwtUserPayload) {
     return this.userService.getFullInfo(user.sub);
   }
 
@@ -59,25 +59,29 @@ export class UserController {
   isBanned(@Param('id') id: string) {
     return this.userService.isBanned(id);
   }
+  ß;
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthUserGuard)
   @Patch('/info')
-  updateUserInfo(@CurrentUser() user: JwtPayload, @Body() dto: UpdateUserDto) {
+  updateUserInfo(
+    @CurrentUser() user: JwtUserPayload,
+    @Body() dto: UpdateUserDto,
+  ) {
     return this.userService.updateUserInfo(user.sub, dto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthUserGuard)
   @Patch('/password')
   changePassword(
-    @CurrentUser() user: JwtPayload,
+    @CurrentUser() user: JwtUserPayload,
     @Body() dto: ChangePasswordUserDto,
   ) {
     return this.userService.changePassword(user.sub, dto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthUserGuard)
   @Delete()
-  deleteUser(@CurrentUser() user: JwtPayload) {
+  deleteUser(@CurrentUser() user: JwtUserPayload) {
     return this.userService.deleteUser(user.sub);
   }
 }
