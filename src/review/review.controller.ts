@@ -3,25 +3,17 @@ import {
   Controller,
   Get,
   Param,
-  Post,
   Put,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { ReviewService } from './review.service';
-import { CreateReviewDto } from './dto/create-review.dto';
 import { Review } from '@prisma/client';
 import { UpdateReviewDto } from './dto/update-review.dto';
 
 @Controller('reviews')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
-
-  @Post()
-  @UsePipes(new ValidationPipe())
-  async create(@Body() dto: CreateReviewDto): Promise<Review> {
-    return this.reviewService.createReview(dto);
-  }
 
   @Get('user/:userId')
   async getByUserId(@Param('userId') userId: string): Promise<Review[]> {

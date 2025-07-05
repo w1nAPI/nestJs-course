@@ -9,9 +9,11 @@ export class ReviewService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async getReviewsByUserId(userId: string): Promise<Review[]> {
-    return this.prismaService.review.findMany({
+    const review = await this.prismaService.review.findMany({
       where: { userId },
     });
+    if (!review) throw new BadRequestException('Отзыв не найден');
+    return review;
   }
 
   async getReviewsByCourseId(courseId: number): Promise<Review[]> {
@@ -21,7 +23,7 @@ export class ReviewService {
   }
 
   async getReview(courseId: number, userId: string): Promise<Review | null> {
-    return this.prismaService.review.findUnique({
+    const existing = await this.prismaService.review.findUnique({
       where: {
         courseId_userId: {
           courseId,
@@ -29,14 +31,19 @@ export class ReviewService {
         },
       },
     });
-  }
-
-  async createReview(dto: CreateReviewDto): Promise<Review> {
-    const existing = await this.getReview(dto.courseId, dto.userId);
-
     if (existing) {
       throw new BadRequestException('Отзыв уже существует');
     }
+    return;
+  }
+
+  async createReview(userId: string, dto: CreateReviewDto): Promise<Review> {
+    if (dto.userId !== userId)
+      throw new BadRequestException(
+        'Вы не можете оставить отзыв за другого пользователя',
+      );
+
+    await this.getReview(dto.courseId, dto.userId);
 
     return this.prismaService.review.create({
       data: {
@@ -71,6 +78,18 @@ export class ReviewService {
         rating: dto.rating,
         title: dto.title,
         text: dto.text,
+      },
+    });
+  }
+
+  async deleteReview(courseId: number, userId: string): Promise<Review> {
+    await this.getReview(courseId, userId);
+    return this.prismaService.review.delete({
+      where: {
+        courseId_userId: {
+          courseId,
+          userId,
+        },
       },
     });
   }

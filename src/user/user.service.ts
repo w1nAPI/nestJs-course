@@ -237,10 +237,4 @@ export class UserService {
 
     return 'Пользователь успешно удалён';
   }
-
-  findAll(): Promise<Array<Omit<User, 'password'>>> {
-    return this.prismaService.user.findMany({
-      select: { id: true, name: true, email: true, image: true, ban: true },
-    });
-  }
 }

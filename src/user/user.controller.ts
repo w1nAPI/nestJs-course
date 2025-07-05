@@ -19,10 +19,15 @@ import { ChangePasswordUserDto } from './dto/change-password-user.dto';
 import { CurrentUser } from './authorization/current-user.decorator';
 import { JwtAuthUserGuard } from './authorization/jwt-auth.guard';
 import { JwtUserPayload } from './authorization/jwt-payload.interface';
+import { ReviewService } from 'src/review/review.service';
+import { CreateReviewDto } from 'src/review/dto/create-review.dto';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly reviewService: ReviewService,
+  ) {}
 
   @Post('/register')
   register(@Body() createUserDto: CreateUserDto) {
@@ -50,16 +55,10 @@ export class UserController {
     return this.userService.getFullInfo(user.sub);
   }
 
-  @Patch(':id/ban')
-  updateBanStatus(@Param('id') id: string) {
-    return this.userService.updateBanStatus(id);
-  }
-
   @Get(':id/ban')
   isBanned(@Param('id') id: string) {
     return this.userService.isBanned(id);
   }
-  ß;
 
   @UseGuards(JwtAuthUserGuard)
   @Patch('/info')
@@ -83,5 +82,14 @@ export class UserController {
   @Delete()
   deleteUser(@CurrentUser() user: JwtUserPayload) {
     return this.userService.deleteUser(user.sub);
+  }
+
+  @UseGuards(JwtAuthUserGuard)
+  @Post('/review')
+  createReview(
+    @CurrentUser() user: JwtUserPayload,
+    @Body() dto: CreateReviewDto,
+  ) {
+    return this.reviewService.createReview(user.sub, dto);
   }
 }
