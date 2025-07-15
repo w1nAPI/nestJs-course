@@ -1,19 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Client } from 'minio';
+import { MinioConfigService } from 'src/config/minio.config.service';
 
 @Injectable()
 export class MinioService {
   private client: Client;
   private readonly logger = new Logger(MinioService.name);
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(private readonly config: MinioConfigService) {
     this.client = new Client({
-      endPoint: configService.get<string>('MINIO_ENDPOINT'),
-      port: parseInt(configService.get<string>('MINIO_PORT'), 10),
-      useSSL: configService.get<string>('MINIO_USE_SSL') === 'true',
-      accessKey: configService.get<string>('MINIO_ACCESS_KEY'),
-      secretKey: configService.get<string>('MINIO_SECRET_KEY'),
+      endPoint: config.endpoint,
+      port: config.port,
+      accessKey: config.accessKey,
+      secretKey: config.secretKey,
     });
   }
 

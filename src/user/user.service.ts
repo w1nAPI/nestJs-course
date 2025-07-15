@@ -9,6 +9,7 @@ import { MinioService } from 'src/minio/minio.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangePasswordUserDto } from './dto/change-password-user.dto';
 import { ResponseUserDto } from './dto/response-user-dto';
+import { JwtConfigService } from 'src/config/jwt.config.service';
 
 @Injectable()
 export class UserService {
@@ -16,6 +17,7 @@ export class UserService {
     private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
     private readonly minioService: MinioService,
+    private readonly jwtConfig: JwtConfigService,
   ) {}
 
   async findByEmail(email: string): Promise<User> {
@@ -46,7 +48,7 @@ export class UserService {
     }
 
     const hashedPassword = await bcrypt.hash(
-      dto.password + process.env.USER_HASH_SECRET,
+      dto.password + this.jwtConfig.userHashSecret,
       10,
     );
 
@@ -78,7 +80,7 @@ export class UserService {
     }
 
     const isPasswordValid = await bcrypt.compare(
-      dto.password + process.env.USER_HASH_SECRET,
+      dto.password + this.jwtConfig.userHashSecret,
       user.password,
     );
 

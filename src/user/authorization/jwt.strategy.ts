@@ -4,13 +4,17 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { UserService } from '../user.service';
 import { JwtUserPayload } from './jwt-payload.interface';
+import { JwtConfigService } from 'src/config/jwt.config.service';
 
 @Injectable()
 export class JwtUserStrategy extends PassportStrategy(Strategy, 'jwtUser') {
-  constructor(private readonly userService: UserService) {
+  constructor(
+    private readonly userService: UserService,
+    private readonly jwtConfig: JwtConfigService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.USER_JWT_SECRET,
+      secretOrKey: jwtConfig.userSecret,
     });
   }
   async validate(payload: JwtUserPayload) {

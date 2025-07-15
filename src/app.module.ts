@@ -7,10 +7,11 @@ import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './user/user.module';
 import { ReviewModule } from './review/review.module';
 import { AdminModule } from './admin/admin.module';
+import configuration from './config/configuration';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
     PrismaModule,
     CourseModule,
     UserModule,

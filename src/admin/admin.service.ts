@@ -7,12 +7,14 @@ import { RegisterAdminDto } from './dto/register-admin.dto';
 import { LoginAdminDto } from './dto/login-admin-dto';
 import { AdminResponseDto } from './dto/admin-response-dto';
 import { Admin } from '@prisma/client';
+import { JwtConfigService } from 'src/config/jwt.config.service';
 
 @Injectable()
 export class AdminService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly jwtConfig: JwtConfigService,
   ) {}
 
   async findById(id: string): Promise<Omit<Admin, 'password'>> {
@@ -52,7 +54,7 @@ export class AdminService {
     }
 
     const hashedPassword = await bcrypt.hash(
-      dto.password + process.env.ADMIN_HASH_SECRET,
+      dto.password + this.jwtConfig.adminHashSecret,
       10,
     );
 
@@ -80,7 +82,7 @@ export class AdminService {
     }
 
     const isPasswordValid = await bcrypt.compare(
-      dto.password + process.env.ADMIN_HASH_SECRET,
+      dto.password + this.jwtConfig.adminHashSecret,
       admin.password,
     );
 
